@@ -21,7 +21,7 @@ void freeTable(Table *table) {
 
 static Entry *findEntry(Entry *entries, int capacity, ObjString *key) {
     uint32_t index = key->hash % capacity;
-    Entry* tombstone = NULL;
+    Entry *tombstone = NULL;
 
     for (;;) {
         Entry *entry = &entries[index];
@@ -110,13 +110,13 @@ void tableAddAll(Table *from, Table *to) {
     }
 }
 
-ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash) {
+ObjString *tableFindString(Table *table, const char *chars, int length, uint32_t hash) {
     if (table->count == 0) return NULL;
 
     uint32_t index = hash % table->capacity;
 
     for (;;) {
-        Entry* entry = &table->entries[index];
+        Entry *entry = &table->entries[index];
 
         if (entry->key == NULL) {
             if (IS_NIL(entry->value)) return NULL;
@@ -127,5 +127,13 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
         }
 
         index = (index + 1) % table->capacity;
+    }
+}
+
+void markTable(Table *table) {
+    for (int i = 0; i < table->capacity; i++) {
+        Entry *entry = &table->entries[i];
+        markObject((Obj *) entry->key);
+        markValue(entry->value);
     }
 }
